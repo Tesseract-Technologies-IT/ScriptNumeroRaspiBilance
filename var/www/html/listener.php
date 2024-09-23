@@ -14,6 +14,7 @@
 // comando per testare il listener.php : echo -n "20022DS-1.04.79.0033" | nc -u -b 255.255.255.255 20410
 $params = require 'params-local.php'; // Include the params-local file
 
+file_put_contents($params['log_file'], '');
 $socket = socket_create(AF_INET, SOCK_DGRAM, SOL_UDP); // Create a UDP socket
 
 if ($socket === false) {
@@ -37,7 +38,7 @@ $bind = socket_bind($socket, $ipAddress, $params['port']);
 echo "Bind: " . $bind . PHP_EOL;
 if ($bind) {
   echo "Sono in ascolto...";
-  //
+  //empty the file in $params['log_file']
   file_put_contents(
     $params['log_file'],
     'started listening on port ['.$params['port'].'] at '.date('H:i').'.'.PHP_EOL,

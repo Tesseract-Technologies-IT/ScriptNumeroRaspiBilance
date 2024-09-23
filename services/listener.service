@@ -1,0 +1,12 @@
+[Unit]
+Description=Start listener.php on startup
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/php /var/www/html/listener.php
+Restart=always
+User=www-data
+Group=www-data
+
+[Install]
+WantedBy=multi-user.target
