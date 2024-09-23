@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# test this has to be 1
 # Redirect all output to a log file
 exec > >(tee -a /var/log/startup_script.log) 2>&1
 
@@ -72,18 +73,6 @@ git_clone_repo() {
         echo "Failed to clone repository into ${TARGET_DIR}. Please check the repo URL and permissions."
         exit 1
     fi
-}
-
-# Main script
-start(){
-  # # starting up the webserver
-  # echo "Starting up the webserver..."
-  # sudo service nginx start
-  # echo "Webserver started successfully."
-  # #run /var/www/html/listener.php
-  # echo "Running listener.php..."
-  # php /var/www/html/listener.php
-  # echo "listener.php completed."
 }
 
 # Perform Git sparse checkout
