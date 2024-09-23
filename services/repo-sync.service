@@ -4,7 +4,7 @@ After=network.target
 
 [Service]
 Type=oneshot
-ExecStart=/usr/local/bin/update_repo.sh
+ExecStart=/startup.sh
 RemainAfterExit=yes
 TimeoutStartSec=300
 
