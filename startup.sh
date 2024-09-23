@@ -73,6 +73,8 @@ git_clone_repo() {
 
         # Move all files in / that end with .sh to /
         echo "Moving all files in / that end with .sh to /..."
+        # Set all files that end with .sh to be executable
+        sudo chmod +x /myrepo/*.sh
         sudo mv /myrepo/*.sh /
     else
         echo "Failed to clone repository into ${TARGET_DIR}. Please check the repo URL and permissions."

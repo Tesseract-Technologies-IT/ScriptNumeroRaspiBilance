@@ -12,7 +12,7 @@
  
 
 // comando per testare il listener.php : echo -n "20022DS-1.04.79.0033" | nc -u -b 255.255.255.255 20410
-$params = require 'params-local.php'; // Include the params-local file
+$params = require 'params.php'; // Include the params-local file
 
 echo 'writing '.file_put_contents($params['log_file'], '').' bytes';
 $socket = socket_create(AF_INET, SOCK_DGRAM, SOL_UDP); // Create a UDP socket
