@@ -105,7 +105,7 @@ for service_file in /services/*.service; do
     echo "Enabling and starting $service_name..."
     sudo chmod 644 "/etc/systemd/system/$service_name"
     sudo systemctl enable "$service_name"
-    sudo systemctl start "$service_name"
+    #sudo systemctl start "$service_name"
     
     # Check the status of the service
     echo "Checking status of $service_name..."
