@@ -1,6 +1,7 @@
 [Unit]
 Description=Update Git Repository and Deploy Files
 After=network.target
+Wants=network-online.target
 
 [Service]
 Type=oneshot
