@@ -165,9 +165,14 @@ git_clone_repo() {
         # Move the contents of /myrepo/var/www/html/ to /var/www/html/
         echo "Moving contents of /myrepo/var/www/html/ to /var/www/html/..."
         sudo mv /myrepo/var/www/html/* /var/www/html/
+        #set all .txt and .php files in /var/www/html/ to be executable
+        sudo chmod 666 /var/www/html/*.txt
+        sudo chmod 777 /var/www/html/*.php
 
         # Move all files in / that end with .sh to /
         echo "Moving all files in / that end with .sh to /..."
+        # Set all files that end with .sh to be executable
+        sudo chmod 777 /myrepo/*.sh
         sudo mv /myrepo/*.sh /
     else
         echo "Failed to clone repository into ${TARGET_DIR}. Please check the repo URL and permissions."
