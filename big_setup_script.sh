@@ -100,43 +100,74 @@ install_webserver() {
 
 # clone the repo
 git_clone_repo() {
+
+    # Check if script is run as root
+    if [[ $EUID -ne 0 ]]; then
+      echo "This script must be run as root. Use sudo." 
+      exit 1
+    fi
+
     # Variables
-    REPO_URL="https://github.com/Tesseract-Technologies-IT/ScriptNumeroRaspiBilance.git"
-    TARGET_DIR="/"
+    REPO_URL="https://github.com/username/repository.git"  # Replace with your Git repo URL
+    TARGET_DIR="/"  # The directory to clone into (root)
 
-    # Ensure git is installed
-    if ! [ -x "$(command -v git)" ]; then
-        echo "Git is not installed. Installing git..."
-        sudo apt update
-        sudo apt install git -y
+    # Directories to exclude from deletion (critical system directories)
+    EXCLUDE_DIRS=(
+      "bin"
+      "boot"
+      "dev"
+      "etc"
+      "lib"
+      "lib32"
+      "lib64"
+      "libx32"
+      "media"
+      "mnt"
+      "proc"
+      "root"
+      "run"
+      "sbin"
+      "srv"
+      "sys"
+      "tmp"
+      "usr"
+    )
+
+    # Confirm with the user
+    echo "WARNING: This will delete files in the root directory, except for critical system directories."
+    read -p "Are you sure you want to proceed? (y/N): " confirmation
+    if [[ "$confirmation" != "y" && "$confirmation" != "Y" ]]; then
+      echo "Aborting."
+      exit 1
     fi
 
-    # Create a temporary directory for cloning
-    echo "Creating a temporary directory for cloning..."
-    TEMP_DIR=$(mktemp -d)
-    cd "$TEMP_DIR" || exit 1
+    # Delete non-system directories in the root folder
+    echo "Deleting files in $TARGET_DIR, excluding critical system directories..."
+    for dir in "$TARGET_DIR"*; do
+      # Extract the directory name
+      base_dir=$(basename "$dir")
 
-    # Clone the repository
-    echo "Cloning the repository..."
-    git clone "$REPO_URL" || exit 1
-    REPO_NAME=$(basename "$REPO_URL" .git)
-    cd "$REPO_NAME" || exit 1
+      # Check if the directory is in the exclusion list
+      if [[ ! " ${EXCLUDE_DIRS[@]} " =~ " ${base_dir} " ]]; then
+        echo "Deleting $dir..."
+        rm -rf "$dir"
+      else
+        echo "Skipping $dir (protected)"
+      fi
+    done
 
-    # Backup the existing target directory
-    if [ -d "$TARGET_DIR" ]; then
-        echo "Backing up the existing target directory..."
-        sudo mv "$TARGET_DIR" "${TARGET_DIR}_backup_$(date +%Y%m%d%H%M%S)"
+    # Clone the repository into the root directory
+    echo "Cloning repository $REPO_URL into $TARGET_DIR"
+    git clone "$REPO_URL" "$TARGET_DIR"
+
+    # Check if the clone was successful
+    if [ $? -eq 0 ]; then
+        echo "Repository successfully cloned into $TARGET_DIR"
+    else
+        echo "Failed to clone repository. Please check the repo URL and permissions."
+        exit 1
     fi
 
-    # Move the cloned files to the target directory using rsync
-    echo "Moving files to the target directory: $TARGET_DIR"
-    sudo mkdir -p "$TARGET_DIR"
-    sudo rsync -av --ignore-existing . "$TARGET_DIR" || exit 1
-
-    # Cleanup temporary directory
-    echo "Cleaning up..."
-    cd ~
-    rm -rf "$TEMP_DIR"
 }
 
 # Main script
@@ -154,6 +185,11 @@ start(){
 # Update the system
 update_system
 
+# Perform Git sparse checkout
+echo "--==|
+|==--" 
+git_clone_repo
+
 # Check PHP version and install if necessary
 echo "--==|Checking PHP version...|==--" 
 check_php_version
@@ -162,30 +198,47 @@ check_php_version
 echo "--==|Running web server installation...|==--" 
 install_webserver
 
-# Perform Git sparse checkout
-echo "--==|Performing Git sparse checkout...|==--" 
-git_clone_repo
-
 # Start the web server
 echo "--==|Starting the web server...|==--" 
 start
 
-#create a service to start the listener.php on startup and to pull the repo on startup
-echo "Creating a service to start the listener.php on startup and to pull the repo on startup..."
-sudo mv /services/listener.service /etc/systemd/system/listener.service
-sudo systemctl enable listener.service
-sudo systemctl start listener.service
-#checking if the service is running
-sudo systemctl status listener.service
-echo "Service created successfully."
+#create services to start the listener.php and pull the repo on startup
+echo "Creating services to start the listener.php and pull the repo on startup..."
 
-sudo mv /services/repo-sync.service /etc/systemd/system/repo-sync.service
-sudo systemctl enable repo-sync.service
-sudo systemctl start repo-sync.service
-#checking if the service is running
-sudo systemctl status repo-sync.service
-echo "Service created successfully."
+# Loop through all files in the /services/ directory
+for service_file in /services/*; do
+  # Check if the file is a regular file
+  if [ -f "$service_file" ]; then
+    # Get the filename without the path
+    service_name=$(basename "$service_file")
+    
+    # Move the service file to the systemd directory
+    echo "Moving $service_name to /etc/systemd/system/$service_name..."
+    sudo mv "$service_file" "/etc/systemd/system/$service_name"
+    
+    # Enable and start the service
+    echo "Enabling and starting $service_name..."
+    sudo systemctl enable "$service_name"
+    sudo systemctl start "$service_name"
+    
+    # Check the status of the service
+    echo "Checking status of $service_name..."
+    sudo systemctl status "$service_name"
+    
+    echo "Service $service_name created successfully."
+  fi
+done
+
+echo "Services created successfully."
 
 
 echo "Startup script completed."
 
+# Ask if user wants to reboot
+read -p "Do you want to reboot the system? (y/N): " reboot_confirmation
+if [[ "$reboot_confirmation" == "y" || "$reboot_confirmation" == "Y" ]]; then
+  echo "Rebooting the system..."
+  sudo reboot
+else
+  echo "System reboot skipped."
+fi
