@@ -1,0 +1,12 @@
+[Unit]
+Description=Update Git Repository and Deploy Files
+After=network.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/update_repo.sh
+RemainAfterExit=yes
+TimeoutStartSec=300
+
+[Install]
+WantedBy=multi-user.target

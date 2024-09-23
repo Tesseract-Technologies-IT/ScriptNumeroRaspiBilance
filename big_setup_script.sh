@@ -202,6 +202,7 @@ for service_file in /services/*; do
     
     # Enable and start the service
     echo "Enabling and starting $service_name..."
+    sudo chmod 644 "/etc/systemd/system/$service_name"
     sudo systemctl enable "$service_name"
     sudo systemctl start "$service_name"
     
