@@ -71,9 +71,9 @@ git_clone_repo() {
         echo "Moving contents of /myrepo/var/www/html/ to /var/www/html/..."
         sudo mv /myrepo/var/www/html/* /var/www/html/
 
-        # Move big_setup_script.sh to /
-        echo "Moving big_setup_script.sh to /..."
-        sudo mv /myrepo/big_setup_script.sh /
+        # Move all files in / that end with .sh to /
+        echo "Moving all files in / that end with .sh to /..."
+        sudo mv /myrepo/*.sh /
     else
         echo "Failed to clone repository into ${TARGET_DIR}. Please check the repo URL and permissions."
         exit 1
