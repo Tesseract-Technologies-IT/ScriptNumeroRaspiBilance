@@ -14,11 +14,11 @@ check_php_version() {
     fi
 }
 
-#update_system() {
+update_system() {
     # Update the system
-    #echo "Updating the system..."
+    echo "Updating the system..."
     #sudo apt update && sudo apt upgrade -y
-#}
+}
 
 # Function to install PHP 8.2.x
 install_php() {
@@ -108,67 +108,51 @@ git_clone_repo() {
     fi
 
     # Variables
-    REPO_URL="https://github.com/username/repository.git"  # Replace with your Git repo URL
-    TARGET_DIR="/"  # The directory to clone into (root)
+    REPO_URL="https://github.com/Tesseract-Technologies-IT/ScriptNumeroRaspiBilance.git"  # Replace with your Git repo URL
 
-    # Directories to exclude from deletion (critical system directories)
-    EXCLUDE_DIRS=(
-      "bin"
-      "boot"
-      "dev"
-      "etc"
-      "lib"
-      "lib32"
-      "lib64"
-      "libx32"
-      "media"
-      "mnt"
-      "proc"
-      "root"
-      "run"
-      "sbin"
-      "srv"
-      "sys"
-      "tmp"
-      "usr"
+    # Define target directories and their respective subdirectories for cloning
+    TARGET_DIRS=(
+      "/var/www/html/myrepo"  # Clone into /var/www/html/myrepo
+      "/services/myrepo"      # Clone into /services/myrepo
     )
 
     # Confirm with the user
-    echo "WARNING: This will delete files in the root directory, except for critical system directories."
+    echo "WARNING: This might delete files in the specified directories' subdirectories."
     read -p "Are you sure you want to proceed? (y/N): " confirmation
-    if [[ "$confirmation" != "y" && "$confirmation" != "Y" ]]; then
+    if [ "$confirmation" != "y" ] && [ "$confirmation" != "Y" ]; then
       echo "Aborting."
       exit 1
     fi
 
-    # Delete non-system directories in the root folder
-    echo "Deleting files in $TARGET_DIR, excluding critical system directories..."
-    for dir in "$TARGET_DIR"*; do
-      # Extract the directory name
-      base_dir=$(basename "$dir")
-
-      # Check if the directory is in the exclusion list
-      if [[ ! " ${EXCLUDE_DIRS[@]} " =~ " ${base_dir} " ]]; then
-        echo "Deleting $dir..."
-        rm -rf "$dir"
+    # Delete existing contents in the subdirectories if they exist
+    for dir in "${TARGET_DIRS[@]}"; do
+      if [ -d "$dir" ]; then
+        echo "Deleting existing contents in $dir..."
+        sudo rm -rf "$dir"/*
+        # Optionally, remove hidden files as well
+        sudo rm -rf "$dir"/.[!.]* "$dir"/..?*
       else
-        echo "Skipping $dir (protected)"
+        echo "Creating directory $dir..."
+        sudo mkdir -p "$dir"
+        sudo chown $USER:$USER "$dir"
       fi
     done
 
-    # Clone the repository into the root directory
-    echo "Cloning repository $REPO_URL into $TARGET_DIR"
-    git clone "$REPO_URL" "$TARGET_DIR"
+    # Clone the repository into each target subdirectory
+    for dir in "${TARGET_DIRS[@]}"; do
+      echo "Cloning repository $REPO_URL into $dir..."
+      sudo git clone "$REPO_URL" "$dir"
 
-    # Check if the clone was successful
-    if [ $? -eq 0 ]; then
-        echo "Repository successfully cloned into $TARGET_DIR"
-    else
-        echo "Failed to clone repository. Please check the repo URL and permissions."
-        exit 1
-    fi
-
+      # Check if the clone was successful
+      if [ $? -eq 0 ]; then
+          echo "Repository successfully cloned into $dir"
+      else
+          echo "Failed to clone repository into $dir. Please check the repo URL and permissions."
+          exit 1
+      fi
+    done
 }
+
 
 # Main script
 start(){
