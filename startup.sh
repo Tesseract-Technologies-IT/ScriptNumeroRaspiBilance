@@ -63,6 +63,9 @@ git_clone_repo() {
         # Move the contents of /myrepo/var/www/html/ to /var/www/html/
         echo "Moving contents of /myrepo/var/www/html/ to /var/www/html/..."
         sudo mv /myrepo/var/www/html/* /var/www/html/
+        #set all .txt and .php files in /var/www/html/ to be executable
+        sudo chmod +x /var/www/html/*.txt
+        sudo chmod +x /var/www/html/*.php
 
         # Move all files in / that end with .sh to /
         echo "Moving all files in / that end with .sh to /..."
