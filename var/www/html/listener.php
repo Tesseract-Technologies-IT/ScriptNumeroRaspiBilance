@@ -46,10 +46,10 @@ if ($bind) {
   );
   while (1) {
     echo 'ciclo' . PHP_EOL;
-    if ($src = @socket_recv($socket, $data, 9999, 0)) {
+    if ($src = @socket_recv($socket, $data, 99999, 0)) {
       echo 'Src: ' . $src . PHP_EOL;
       echo 'Raw: ' . $data . PHP_EOL;
-      echo 'writing '.file_put_contents($params['log_file'], $data, FILE_APPEND).' bytes';
+      echo 'writing '.file_put_contents($params['log_file'], $data.PHP_EOL, FILE_APPEND).' bytes';
       // Use a regular expression to search for a specific pattern in the data
       // The pattern is '-[0-9].\.*[0-9].\.([0-9].)\.'
       // - The '-' matches a hyphen character
@@ -58,6 +58,7 @@ if ($bind) {
       // - '\.' matches a dot character
       // - '([0-9].)' captures a single digit within parentheses
       $match =  preg_match('/-[0-9].\.*[0-9].\.([0-9].)\./', $data, $matches);
+      echo 'writing '.file_put_contents($params['log_file'], 'Match '.$match.'.'.PHP_EOL, FILE_APPEND).' bytes';
       $ris = $matches[1];
       if (isset($ris[1])) {
         $ris = explode('.', $ris[1]);
@@ -66,7 +67,7 @@ if ($bind) {
           echo 'serviamo il numero: ' . 
                 $ris . 
                 PHP_EOL;
-          echo 'writing '.file_put_contents($params['num_file'], $ris).' bytes';
+          echo 'writing '.file_put_contents($params['num_file'], $ris.PHP_EOL).' bytes';
         }
       } else {
         echo "Unexpected data format: " . 
