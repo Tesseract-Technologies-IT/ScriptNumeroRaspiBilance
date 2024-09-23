@@ -14,12 +14,14 @@ check_php_version() {
     fi
 }
 
+#update_system() {
+    # Update the system
+    #echo "Updating the system..."
+    #sudo apt update && sudo apt upgrade -y
+#}
+
 # Function to install PHP 8.2.x
 install_php() {
-    # Update the system
-    echo "Updating the system..."
-    sudo apt update && sudo apt upgrade -y
-
     # Install prerequisites
     echo "Installing prerequisites..."
     sudo apt install -y lsb-release ca-certificates apt-transport-https software-properties-common wget
@@ -34,8 +36,8 @@ install_php() {
     sudo apt update
 
     # Install PHP 8.2 and common PHP extensions
-    echo "Installing PHP 8.2.18..."
-    sudo apt install -y php8.2=8.2.18-1+$(lsb_release -sc)+1 php8.2-cli php8.2-fpm php8.2-mbstring php8.2-xml php8.2-mysql php8.2-curl php8.2-zip
+    echo "Installing PHP 8.2..."
+    sudo apt install -y php8.2 php8.2-cli php8.2-fpm php8.2-mbstring php8.2-xml php8.2-mysql php8.2-curl php8.2-zip
 
     # Verify PHP installation
     echo "Verifying PHP version..."
@@ -45,14 +47,11 @@ install_php() {
     echo "Restarting PHP-FPM service..."
     sudo systemctl restart php8.2-fpm
 
-    echo "PHP 8.2.18 installation completed!"
+    echo "PHP 8.2 installation completed!"
 }
 
 # Function to install and configure Nginx
-install_webserver() {
-    # Update the system
-    echo "Updating the system..."
-    sudo apt update && sudo apt upgrade -y
+install_webserver() { 
 
     # Install Nginx
     echo "Installing Nginx..."
@@ -64,10 +63,12 @@ install_webserver() {
     sudo systemctl enable nginx
 
     # Set permissions for the web root directory
-    WEB_ROOT="/var/www/html"
+    WEB_ROOT="/"
     echo "Setting permissions for the web root directory..."
-    sudo chown -R $USER:$USER "$WEB_ROOT"
-    sudo chmod -R 755 "$WEB_ROOT"
+    sudo chown -R $USER:$USER "/var/www/html"
+    sudo chown -R $USER:$USER "/services"
+    sudo chmod -R 755 "/var/www/html"
+    sudo chmod -R 755 "/services"
 
     # Configure Nginx to serve the numero.html file
     echo "Configuring Nginx to serve numero.html..."
@@ -97,7 +98,7 @@ install_webserver() {
     echo "Nginx setup completed. You can access numero.html at http://$IP_ADDRESS/numero.html from another device on the same network."
 }
 
-# Function to perform Git sparse checkout
+# clone the repo
 git_clone_repo() {
     # Variables
     REPO_URL="https://github.com/Tesseract-Technologies-IT/ScriptNumeroRaspiBilance.git"
@@ -127,14 +128,14 @@ git_clone_repo() {
         sudo mv "$TARGET_DIR" "${TARGET_DIR}_backup_$(date +%Y%m%d%H%M%S)"
     fi
 
-    # Move the cloned files to the target directory
+    # Move the cloned files to the target directory using rsync
     echo "Moving files to the target directory: $TARGET_DIR"
     sudo mkdir -p "$TARGET_DIR"
-    sudo mv ./* "$TARGET_DIR" || exit 1
+    sudo rsync -av --ignore-existing . "$TARGET_DIR" || exit 1
 
     # Cleanup temporary directory
     echo "Cleaning up..."
-    cd ..
+    cd ~
     rm -rf "$TEMP_DIR"
 }
 
@@ -150,19 +151,23 @@ start(){
   echo "listener.php completed."
 }
 
+# Update the system
+update_system
+
 # Check PHP version and install if necessary
+echo "--==|Checking PHP version...|==--" 
 check_php_version
 
 # Run the web server installation script
-echo "Running web server installation..."
+echo "--==|Running web server installation...|==--" 
 install_webserver
 
 # Perform Git sparse checkout
-echo "Performing Git sparse checkout..."
+echo "--==|Performing Git sparse checkout...|==--" 
 git_clone_repo
 
 # Start the web server
-echo "Starting the web server..." 
+echo "--==|Starting the web server...|==--" 
 start
 
 #create a service to start the listener.php on startup and to pull the repo on startup
@@ -170,10 +175,15 @@ echo "Creating a service to start the listener.php on startup and to pull the re
 sudo mv /services/listener.service /etc/systemd/system/listener.service
 sudo systemctl enable listener.service
 sudo systemctl start listener.service
+#checking if the service is running
+sudo systemctl status listener.service
 echo "Service created successfully."
+
 sudo mv /services/repo-sync.service /etc/systemd/system/repo-sync.service
 sudo systemctl enable repo-sync.service
 sudo systemctl start repo-sync.service
+#checking if the service is running
+sudo systemctl status repo-sync.service
 echo "Service created successfully."
 
 

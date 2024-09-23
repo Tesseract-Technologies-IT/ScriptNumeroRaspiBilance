@@ -14,7 +14,7 @@
 // comando per testare il listener.php : echo -n "20022DS-1.04.79.0033" | nc -u -b 255.255.255.255 20410
 $params = require 'params-local.php'; // Include the params-local file
 
-file_put_contents($params['log_file'], '');
+echo 'writing '.file_put_contents($params['log_file'], '').' bytes';
 $socket = socket_create(AF_INET, SOCK_DGRAM, SOL_UDP); // Create a UDP socket
 
 if ($socket === false) {
@@ -49,7 +49,7 @@ if ($bind) {
     if ($src = @socket_recv($socket, $data, 9999, 0)) {
       echo 'Src: ' . $src . PHP_EOL;
       echo 'Raw: ' . $data . PHP_EOL;
-      file_put_contents($params['log_file'], $data, FILE_APPEND);
+      echo 'writing '.file_put_contents($params['log_file'], $data, FILE_APPEND).' bytes';
       // Use a regular expression to search for a specific pattern in the data
       // The pattern is '-[0-9].\.*[0-9].\.([0-9].)\.'
       // - The '-' matches a hyphen character
@@ -66,7 +66,7 @@ if ($bind) {
           echo 'serviamo il numero: ' . 
                 $ris . 
                 PHP_EOL;
-          file_put_contents($params['num_file'], $ris);
+          echo 'writing '.file_put_contents($params['num_file'], $ris).' bytes';
         }
       } else {
         echo "Unexpected data format: " . 

@@ -3,7 +3,7 @@ Description=Pull the repository on startup
 After=network.target
 
 [Service]
-ExecStart=/usr/bin/git -C /var/www/html pull
+ExecStart=/usr/bin/git -C / pull
 ExecStartPost=/bin/mv /services/*.service /etc/systemd/system/
 Restart=always
 User=www-data
