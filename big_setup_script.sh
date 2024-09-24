@@ -107,6 +107,14 @@ git_clone_repo() {
       exit 1
     fi
 
+    # Check if git is installed and install if necessary
+    if ! command -v git > /dev/null; then
+      echo "Git is not installed. Installing Git..."
+      sudo apt install -y git
+    else
+      echo "Git is already installed."
+    fi
+
     # Variables
     REPO_URL="https://github.com/Tesseract-Technologies-IT/ScriptNumeroRaspiBilance.git"  # Replace with your Git repo URL
 
@@ -157,7 +165,7 @@ git_clone_repo() {
         # Move the contents of /myrepo/var/www/html/ to /var/www/html/
         echo "Moving contents of /myrepo/var/www/html/ to /var/www/html/..."
         sudo mv /myrepo/var/www/html/* /var/www/html/
-        #set all .txt and .php files in /var/www/html/ to be executable
+        #set all .php files in /var/www/html/ to be executable
         sudo chmod 666 /var/www/html/*.txt
         sudo chmod 777 /var/www/html/*.php
 
@@ -201,9 +209,6 @@ check_php_version
 echo "--==|Running web server installation...|==--" 
 install_webserver
 
-# Start the web server
-echo "--==|Starting the web server...|==--" 
-start
 
 #create services to start the listener.php and pull the repo on startup
 echo "Creating services to start the listener.php and pull the repo on startup..."
@@ -248,6 +253,9 @@ done
 
 echo "Services created successfully."
 
+# Start the web server
+echo "--==|Starting the web server...|==--" 
+start
 
 echo "Startup script completed."
 
