@@ -5,7 +5,7 @@ Wants=network-online.target
 
 [Service]
 Type=oneshot
-ExecStart=/startup.sh
+ExecStart=/services/startup.sh
 RemainAfterExit=yes
 TimeoutStartSec=300
 

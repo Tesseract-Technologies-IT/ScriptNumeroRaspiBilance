@@ -194,11 +194,11 @@ start(){
 }
 
 # Update the system
+echo "--==|Updating the system|==--" 
 update_system
 
-# Perform Git sparse checkout
-echo "--==|
-|==--" 
+# Clone Git repository
+echo "--==|Cloning Repo...|==--" 
 git_clone_repo
 
 # Check PHP version and install if necessary
@@ -222,20 +222,33 @@ for service_file in /services/*.service; do
   if [ -f "$service_file" ]; then
     # Get the filename without the path
     service_name=$(basename "$service_file")
+    target_file="/etc/systemd/system/$service_name"
     
-    # Move the service file to the systemd directory
-    echo "Moving $service_name to /etc/systemd/system/$service_name..."
-    sudo mv "$service_file" "/etc/systemd/system/$service_name"
+    # Check if the target service file already exists
+    if [ -f "$target_file" ]; then
+      # Compare the contents of the existing file and the new file
+      if ! cmp -s "$service_file" "$target_file"; then
+        echo "Updating $service_name as the files are different..."
+        sudo mv "$service_file" "$target_file"
+      else
+        echo "Skipping $service_name as the files are identical."
+        sudo rm "$service_file"
+        continue
+      fi
+    else
+      echo "Moving $service_name to $target_file..."
+      sudo mv "$service_file" "$target_file"
+    fi
     
     # Enable and start the service
     echo "Enabling and starting $service_name..."
-    sudo chmod 644 "/etc/systemd/system/$service_name"
+    sudo chmod 644 "$target_file"
     sudo systemctl enable "$service_name"
     #sudo systemctl start "$service_name"
     
     # Check the status of the service
-    echo "Checking status of $service_name..."
-    sudo systemctl status "$service_name"
+    #echo "Checking status of $service_name..."
+    #sudo systemctl status "$service_name"
     
     echo "Service $service_name created successfully."
   fi

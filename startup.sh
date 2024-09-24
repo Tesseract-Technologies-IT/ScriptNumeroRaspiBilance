@@ -96,22 +96,25 @@ for service_file in /services/*.service; do
   if [ -f "$service_file" ]; then
     # Get the filename without the path
     service_name=$(basename "$service_file")
-    
-    # Move the service file to the systemd directory
-    echo "Moving $service_name to /etc/systemd/system/$service_name..."
-    sudo mv "$service_file" "/etc/systemd/system/$service_name"
-    
-    # Enable and start the service
-    echo "Enabling and starting $service_name..."
-    sudo chmod 644 "/etc/systemd/system/$service_name"
-    sudo systemctl enable "$service_name"
-    #sudo systemctl start "$service_name"
-    
-    # Check the status of the service
-    echo "Checking status of $service_name..."
-    sudo systemctl status "$service_name"
-    
-    echo "Service $service_name created successfully."
+    if [diff /services/$service_name /etc/systemd/system/$service_name]; then
+      echo "Service $service_name already exists."
+    else
+      # Move the service file to the systemd directory
+      echo "Moving $service_name to /etc/systemd/system/$service_name..."
+      sudo mv "$service_file" "/etc/systemd/system/$service_name"
+      
+      # Enable and start the service
+      echo "Enabling and starting $service_name..."
+      sudo chmod 644 "/etc/systemd/system/$service_name"
+      sudo systemctl enable "$service_name"
+      #sudo systemctl start "$service_name"
+      
+      # Check the status of the service
+      echo "Checking status of $service_name..."
+      sudo systemctl status "$service_name"
+      
+      echo "Service $service_name created successfully."
+    fi
   fi
 done
 

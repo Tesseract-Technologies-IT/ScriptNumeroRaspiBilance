@@ -14,7 +14,7 @@
 // comando per testare il listener.php : echo -n "20022DS-1.04.79.0033" | nc -u -b 255.255.255.255 20410
 $params = require 'params.php'; // Include the params-local file
 
-echo 'writing '.file_put_contents($params['log_file'], '').' bytes';
+echo 'writing '.file_put_contents($params['log_file'], '').' bytes'.PHP_EOL;
 $socket = socket_create(AF_INET, SOCK_DGRAM, SOL_UDP); // Create a UDP socket
 
 if ($socket === false) {
@@ -50,7 +50,7 @@ while(1){
       if ($src = @socket_recv($socket, $data, 99999, 0)) {
         echo 'Src: ' . $src . PHP_EOL;
         echo 'Raw: ' . $data . PHP_EOL;
-        echo 'writing '.file_put_contents($params['log_file'], $data.PHP_EOL, FILE_APPEND).' bytes';
+        file_put_contents($params['log_file'], $data.PHP_EOL, FILE_APPEND);
         // Use a regular expression to search for a specific pattern in the data
         // The pattern is '-[0-9].\.*[0-9].\.([0-9].)\.'
         // - The '-' matches a hyphen character
@@ -58,17 +58,15 @@ while(1){
         // - '\.*' matches zero or more occurrences of a dot character
         // - '\.' matches a dot character
         // - '([0-9].)' captures a single digit within parentheses
-        $match =  preg_match('/-[0-9].\.*[0-9].\.([0-9].)\./', $data, $matches);
-        echo 'writing '.file_put_contents($params['log_file'], 'Match '.$match.'.'.PHP_EOL, FILE_APPEND).' bytes';
+        $match =  preg_match('/-[0-9].\.*[0-9].\.([0-9]*.)\./', $data, $matches);
+        file_put_contents($params['log_file'], 'Match '.$match.'.'.PHP_EOL, FILE_APPEND);
         $ris = $matches[1];
-        if (isset($ris[1])) {
-          $ris = explode('.', $ris[1]);
-          $ris = $ris[0];
+        if (isset($ris)) {
           if ($ris) {
             echo 'serviamo il numero: ' . 
                   $ris . 
                   PHP_EOL;
-            echo 'writing '.file_put_contents($params['num_file'], $ris.PHP_EOL).' bytes';
+            file_put_contents($params['num_file'], $ris.PHP_EOL);
           }
         } else {
           echo "Unexpected data format: " . 
