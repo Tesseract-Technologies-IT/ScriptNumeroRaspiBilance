@@ -253,12 +253,6 @@ done
 
 echo "Services created successfully."
 
-# Start the web server
-echo "--==|Starting the web server...|==--" 
-start
-
-echo "Startup script completed."
-
 # Ask if user wants to reboot
 read -p "Do you want to reboot the system? (y/N): " reboot_confirmation
 if [[ "$reboot_confirmation" == "y" || "$reboot_confirmation" == "Y" ]]; then
