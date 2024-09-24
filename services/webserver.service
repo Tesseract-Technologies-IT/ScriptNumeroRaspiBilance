@@ -1,0 +1,12 @@
+[Unit]
+Description=Nginx Web Server
+After=network.target
+
+[Service]
+ExecStart=sudo service nginx start
+ExecReload=sudo service nginx reload
+ExecStop=sudo service nginx stop
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
