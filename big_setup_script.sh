@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Redirect all output to a log file
-exec > >(tee -a /var/log/startup_script.log) 2>&1
+exec > >(tee -a /var/log/setup_script.log) 2>&1
 
 # Function to check PHP version
 check_php_version() {
@@ -17,7 +17,7 @@ check_php_version() {
 update_system() {
     # Update the system
     echo "Updating the system..."
-    #sudo apt update && sudo apt upgrade -y
+    sudo apt update && sudo apt upgrade -y
 }
 
 # Function to install PHP 8.2.x
@@ -116,14 +116,6 @@ git_clone_repo() {
       "/services"      # Clone into /services/myrepo
     )
     TARGET_DIR="/myrepo"
-
-    # Confirm with the user
-    echo "WARNING: This might delete files in the specified directories' subdirectories."
-    read -p "Are you sure you want to proceed? (y/N): " confirmation
-    if [ "$confirmation" != "y" ] && [ "$confirmation" != "Y" ]; then
-      echo "Aborting."
-      exit 1
-    fi
 
     # Delete existing contents in the subdirectories if they exist
     for dir in "${TARGET_DIRS[@]}"; do
